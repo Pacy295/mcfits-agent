@@ -1,0 +1,46 @@
+# 依赖与构建产物
+node_modules/
+
+# 环境变量与真实凭证（示例文件要保留）
+.env
+.env.*
+!.env.example
+
+# 运行时缓存与日志
+cache/
+logs/
+*.log
+
+# 截图与录屏（如需随仓库发布，请先确认无敏感信息）
+.shots/
+
+# 编辑器 / 系统临时文件
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# WorkBuddy 本地会话与记忆（不随仓库发布）
+.workbuddy/
+
+# 本地打包产物
+*.zip
+
+# Local publication review and unconfirmed documents
+.publication-local/
+/submit/
+**/workbuddy-session/
+**/models.json
+**/mcp.json
+.mcd_mcp_env
+*.jsonl
+*.pem
+*.key
+*.p12
+*.pfx
+coverage/
+tmp/
+temp/
+*.tmp
+*.bak

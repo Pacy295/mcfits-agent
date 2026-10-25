@@ -1,0 +1,117 @@
+{
+  "_note": "商品详情名称 → 官方营养表条目的别名映射。confirmed=true 才会被自动采用；confirmed=false 仅为候选建议，需人工确认后才生效。硬规则：不同规格（小/中/大杯）、不同口味（椒盐/香辣/X风味）不得互相映射。",
+  "_schema": {
+    "productName": "门店 query-meal-detail 返回的 name（或套餐 round 选项名）",
+    "nutritionName": "list-nutrition-foods 返回的 productName",
+    "confirmed": "是否已人工确认",
+    "evidence": "确认依据（必须可复核）",
+    "confirmedBy": "确认人",
+    "confirmedAt": "确认日期"
+  },
+  "aliases": [
+    {
+      "productName": "100% 苹果汁(盒装)",
+      "nutritionName": "100%苹果汁",
+      "confirmed": true,
+      "evidence": "差异仅为 1 个空格与包装描述「盒装」；营养表内不存在第二种包装的 100% 苹果汁，规格/口味无歧义。",
+      "confirmedBy": "stage1-pipeline",
+      "confirmedAt": "2026-10-24"
+    },
+    {
+      "productName": "麦咖啡™冰美式中杯",
+      "nutritionName": "冰美式中杯",
+      "confirmed": true,
+      "evidence": "营养表 160 条中所有咖啡条目均无「麦咖啡」品牌前缀（冰美式/热美式/冰奶铁/热奶铁各按大中小杯命名），而门店咖啡均为麦咖啡系列；「中杯」规格一致，仅品牌前缀差异。",
+      "confirmedBy": "stage1-pipeline",
+      "confirmedAt": "2026-10-24"
+    },
+    {
+      "productName": "麦咖啡™冰奶铁中杯",
+      "nutritionName": "冰奶铁中杯",
+      "confirmed": true,
+      "evidence": "同上：品牌前缀差异，规格（中杯）与冷热（冰）一致；营养表另有「冰燕麦奶铁中杯」为不同奶基，未混用。",
+      "confirmedBy": "stage1-pipeline",
+      "confirmedAt": "2026-10-24"
+    },
+    {
+      "productName": "可口可乐（中杯）",
+      "nutritionName": "可乐中杯",
+      "confirmed": true,
+      "evidence": "同一份 query-meal-detail 数据内自证：code 3050 的详情名是「可口可乐（中杯）」，而它在「麦香鱼中套餐」第 3 round 中的选项名是「可乐中杯」，与营养表条目完全同名；营养表同时存在「无糖可口可乐中杯」，说明「可乐X杯」即常规可口可乐。",
+      "confirmedBy": "stage1-pipeline",
+      "confirmedAt": "2026-10-24"
+    },
+    {
+      "productName": "可口可乐（大杯）",
+      "nutritionName": "可乐大杯",
+      "confirmed": true,
+      "evidence": "同上，code 3100 在套餐 round 中的选项名为「可乐大杯」。",
+      "confirmedBy": "stage1-pipeline",
+      "confirmedAt": "2026-10-24"
+    },
+    {
+      "productName": "可口可乐（小杯）",
+      "nutritionName": "可乐小杯",
+      "confirmed": true,
+      "evidence": "同上，code 3000 在「可乐」自选饮料 round 中的选项名为「可乐小杯」。",
+      "confirmedBy": "stage1-pipeline",
+      "confirmedAt": "2026-10-24"
+    },
+    {
+      "productName": "5块麦乐鸡",
+      "nutritionName": "麦乐鸡5块",
+      "confirmed": true,
+      "evidence": "词序差异（5块/麦乐鸡 顺序互换），份数（5 块）与品类完全一致；门店无其他 5 块装麦乐鸡。",
+      "confirmedBy": "stage1-pipeline",
+      "confirmedAt": "2026-10-24"
+    },
+    {
+      "productName": "那么大鸡排（椒盐风味）",
+      "nutritionName": "那么大鸡排",
+      "confirmed": false,
+      "evidence": "候选：营养表仅有「那么大鸡排」。菜单名带「（椒盐风味）」属口味描述差异，无法证明与营养表条目同款，需人工核对官方营养资料后确认。",
+      "confirmedBy": null,
+      "confirmedAt": null
+    },
+    {
+      "productName": "阳光橙麦炫酷",
+      "nutritionName": "麦旋酷阳光橙",
+      "confirmed": false,
+      "evidence": "候选：名称词序与用字均有差异（炫/旋）。可能为同一产品的新命名，也可能为不同配方，需人工确认。",
+      "confirmedBy": null,
+      "confirmedAt": null
+    },
+    {
+      "productName": "旋旋星愿贴",
+      "nutritionName": null,
+      "confirmed": false,
+      "evidence": "非食品周边（贴纸），不应有营养数据。",
+      "confirmedBy": null,
+      "confirmedAt": null
+    },
+    {
+      "productName": "“葱不求人“按摩捶痒痒挠",
+      "nutritionName": null,
+      "confirmed": false,
+      "evidence": "非食品周边（按摩捶），不应有营养数据。",
+      "confirmedBy": null,
+      "confirmedAt": null
+    },
+    {
+      "productName": "麦咖啡™热美式中杯",
+      "nutritionName": "热美式中杯",
+      "confirmed": true,
+      "evidence": "同「麦咖啡™冰美式中杯」：营养表咖啡条目均无品牌前缀，门店咖啡均带「麦咖啡™」，冷热与杯型一致。",
+      "confirmedBy": "stage3-pipeline",
+      "confirmedAt": "2026-10-24"
+    },
+    {
+      "productName": "麦咖啡™热奶铁中杯",
+      "nutritionName": "热奶铁中杯",
+      "confirmed": true,
+      "evidence": "同上，热奶铁中杯与门店「麦咖啡™热奶铁中杯」仅品牌前缀差异；营养表另有燕麦奶版本，未混用。",
+      "confirmedBy": "stage3-pipeline",
+      "confirmedAt": "2026-10-24"
+    }
+  ]
+}

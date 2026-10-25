@@ -1,0 +1,28 @@
+{
+  "name": "mcfits-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "McFit Agent — Natural-language meal recommendations with nutrition-aware optimization and MCP pricing.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/http/server.js",
+    "dev": "node --watch src/http/server.js",
+    "prefetch": "node scripts/prefetch.js",
+    "coverage": "node scripts/coverage.js",
+    "verify": "node scripts/verify-stage1.js",
+    "test": "node --test test/*.test.js",
+    "smoke": "node scripts/ui-smoke.mjs",
+    "test:unit": "node --test test/unit.test.js test/parse.test.js test/optimize.test.js test/pareto.test.js",
+    "test:api": "node --test test/api.test.js",
+    "verify:2": "node scripts/verify-stage2.js",
+    "smoke:2": "node scripts/ui-smoke2.mjs",
+    "test:ui": "node scripts/ui-product.mjs",
+    "audit": "node scripts/security-audit.mjs",
+    "verify:1": "node scripts/verify-stage1.js",
+    "test:offline": "node --test test/unit.test.js test/parse.test.js test/optimize.test.js test/pareto.test.js test/stage5.test.js test/recommend-quality.test.js",
+    "test:security": "node --test test/security.test.js"
+  }
+}

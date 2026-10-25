@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>麦门营养决策官 · 按预算和目标配一餐</title>
+    <meta name="description" content="说出预算和营养目标，用真实麦当劳菜单、价格与官方营养数据，给你几套算得清的配餐方案。" />
+    <link rel="stylesheet" href="/product.css" />
+  </head>
+  <body>
+    <header class="appbar">
+      <div class="brand">
+        <span class="logo">M</span>
+        <div class="brand-text">
+          <strong>麦门营养决策官</strong>
+          <span>McFit Agent</span>
+        </div>
+      </div>
+      <div class="appbar-right">
+        <button id="modelBtn" class="pill pill-muted" type="button" title="模型与额度说明">解析服务检测中…</button>
+        <a class="pill pill-ghost" href="/console.html" title="工程验证台（数据诊断）">工程台</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <!-- D1 自然语言需求输入 -->
+      <section class="hero">
+        <h1>今天想吃点什么？</h1>
+        <p class="hero-sub">一句话说清预算、口味或忌口就行，直接给你推荐。价格与营养来自麦当劳官方接口实算。</p>
+
+        <div class="askbox">
+          <textarea id="q" rows="2" maxlength="500" placeholder="比如：肚子有点不舒服，不想吃辣吃冰的，推荐一个 60 元的套餐"></textarea>
+          <button id="askBtn" class="btn btn-primary" type="button"><span class="btn-label">直接推荐</span></button>
+        </div>
+
+        <div class="examples" id="examples">
+          <button type="button" data-q="推荐一个60元的套餐。">推荐一个 60 元的套餐</button>
+          <button type="button" data-q="最近肚子有点不舒服，不是很喜欢吃油的，也不喜欢吃辣的吃冰的，你给我推荐一个60元的套餐。">肚子不舒服 · 清淡点</button>
+          <button type="button" data-q="今天想随便吃点，预算30以内，给我推荐个套餐。">随便吃点 · 30 元内</button>
+          <button type="button" data-q="40元以内，蛋白质至少30g，热量不超过750 kcal，尽量高蛋白。">高蛋白 · 控热量</button>
+        </div>
+
+        <div id="parseStatus" class="parse-status hidden" role="status"></div>
+      </section>
+
+      <!-- D2 需求理解（默认视图）：标签 + 简短诚实说明 + 高级入口 -->
+      <section id="understanding" class="und hidden" aria-label="需求理解">
+        <div class="und-head">
+          <h2>我理解的需求</h2>
+          <button id="advToggle" class="link-btn" type="button">微调条件 ▾</button>
+        </div>
+        <div class="chips" id="undChips"></div>
+        <div id="undNotes" class="und-notes"></div>
+        <div id="clarifyInline" class="clarify-inline hidden"></div>
+      </section>
+
+      <!-- D2' 高级条件面板（默认收起，点「微调条件」展开） -->
+      <section id="constraintsPanel" class="panel hidden" aria-label="配餐条件">
+        <div class="panel-head">
+          <h2>微调条件</h2>
+          <span class="panel-hint">改任意一项都会重新搜索并重新核价，不是只筛旧结果</span>
+        </div>
+
+        <div class="cond-grid">
+          <div class="cond" data-key="budgetMax">
+            <label class="cond-toggle"><input type="checkbox" id="on-budgetMax" /><span>预算上限</span></label>
+            <div class="cond-input">
+              <input type="number" id="in-budgetMax" min="1" step="1" inputmode="decimal" placeholder="不限制" />
+              <span class="unit">元</span>
+            </div>
+            <p class="cond-note">硬约束</p>
+          </div>
+
+          <div class="cond" data-key="caloriesMax">
+            <label class="cond-toggle"><input type="checkbox" id="on-caloriesMax" /><span>热量上限</span></label>
+            <div class="cond-input">
+              <input type="number" id="in-caloriesMax" min="0" step="10" inputmode="numeric" placeholder="不限制" />
+              <span class="unit">kcal</span>
+            </div>
+            <p class="cond-note">硬约束</p>
+          </div>
+
+          <div class="cond" data-key="caloriesMin">
+            <label class="cond-toggle"><input type="checkbox" id="on-caloriesMin" /><span>热量下限</span></label>
+            <div class="cond-input">
+              <input type="number" id="in-caloriesMin" min="0" step="10" inputmode="numeric" placeholder="不限制" />
+              <span class="unit">kcal</span>
+            </div>
+            <p class="cond-note">硬约束</p>
+          </div>
+
+          <div class="cond" data-key="proteinMin">
+            <label class="cond-toggle"><input type="checkbox" id="on-proteinMin" /><span>蛋白质下限</span></label>
+            <div class="cond-input">
+              <input type="number" id="in-proteinMin" min="0" step="1" inputmode="numeric" placeholder="不限制" />
+              <span class="unit">g</span>
+            </div>
+            <p class="cond-note">硬约束</p>
+          </div>
+        </div>
+
+        <div class="cond-blocks">
+          <div class="block">
+            <div class="block-title">必须包含 <span class="tag tag-hard">硬约束</span></div>
+            <div class="chips" id="requiredChips">
+              <label class="chip"><input type="checkbox" value="main" /><span>主食</span></label>
+              <label class="chip"><input type="checkbox" value="side" /><span>小食</span></label>
+              <label class="chip"><input type="checkbox" value="drink" /><span>饮料</span></label>
+              <label class="chip"><input type="checkbox" value="dessert" /><span>甜品</span></label>
+            </div>
+          </div>
+
+          <div class="block">
+            <div class="block-title">优先考虑 <span class="tag tag-soft">软偏好</span></div>
+            <div class="chips" id="objectiveChips">
+              <label class="chip"><input type="checkbox" value="protein:max" /><span>高蛋白</span></label>
+              <label class="chip"><input type="checkbox" value="calories:min" /><span>更低热量</span></label>
+              <label class="chip"><input type="checkbox" value="price:min" /><span>更便宜</span></label>
+              <label class="chip"><input type="checkbox" value="taste:max" /><span>口味优先</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="cond-blocks">
+          <div class="block">
+            <div class="block-title">想吃 / 希望包含</div>
+            <div class="chips chips-edit" id="prefChips"></div>
+            <div class="add-row">
+              <input type="text" id="prefInput" maxlength="12" placeholder="如：无糖可乐" />
+              <button type="button" class="btn btn-mini" data-add="pref">添加</button>
+            </div>
+          </div>
+          <div class="block">
+            <div class="block-title">不要 / 排除</div>
+            <div class="chips chips-edit" id="exclChips"></div>
+            <div class="add-row">
+              <input type="text" id="exclInput" maxlength="12" placeholder="如：麦辣" />
+              <button type="button" class="btn btn-mini" data-add="excl">添加</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="dietBox" class="diet-box hidden"></div>
+        <div id="clarifyBox" class="clarify-box hidden"></div>
+
+        <div class="panel-foot">
+          <button id="regenBtn" class="btn btn-primary" type="button">重新配餐</button>
+          <span id="constraintMeta" class="muted"></span>
+        </div>
+      </section>
+
+      <!-- D3 推荐结果 -->
+      <section id="results" class="results" aria-live="polite"></section>
+    </main>
+
+    <!-- D4 套餐详情抽屉 -->
+    <div id="drawer" class="drawer hidden" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="drawer-mask" data-close="1"></div>
+      <div class="drawer-body">
+        <header class="drawer-head">
+          <div>
+            <h3 id="drawerTitle">套餐详情</h3>
+            <p id="drawerSub" class="muted"></p>
+          </div>
+          <button class="icon-btn" type="button" data-close="1" aria-label="关闭">×</button>
+        </header>
+        <div id="drawerContent" class="drawer-content"></div>
+      </div>
+    </div>
+
+    <footer class="foot">
+      <p>
+        数据来源：麦当劳 MCP 门店菜单 / 商品详情 / 官方营养表 / calculate-price 实算。营养为各组件官方标准值之和，
+        官方未提供套餐级营养标示；特制（去酱/去冰）后的营养变化无法计算，页面不会给出精确值。
+      </p>
+      <p class="foot-dim">本项目为参赛作品，与麦当劳官方无关，不提供下单、支付或优惠券服务，仅使用只读接口。</p>
+    </footer>
+
+    <script type="module" src="/product.js"></script>
+  </body>
+</html>

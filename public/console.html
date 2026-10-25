@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>麦门营养决策官 · 工程验证台（第一阶段/第二阶段）</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">M</span>
+        <div>
+          <h1>麦门营养决策官 <span class="en">McFit Agent</span></h1>
+          <p class="sub">工程验证台 · 数据管线 / 诊断（产品页请回到 /）</p>
+        </div>
+      </div>
+      <div class="status" id="statusBar">
+        <span class="pill" id="pillHealth">检测中…</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="card" id="stage2Card">
+        <div class="panel-head">
+          <h2>智能配餐 · 自然语言 → 多方案</h2>
+          <div class="filters">
+            <span class="pill" id="llmBadge">LLM 状态检测中…</span>
+            <button id="poolBtn" class="btn ghost small">查看候选池</button>
+          </div>
+        </div>
+
+        <div class="ask">
+          <textarea id="nlInput" rows="2" placeholder="例如：40元以内，蛋白质至少30g，热量不超过750kcal，最好来杯无糖可乐"></textarea>
+          <div class="ask-actions">
+            <button id="parseBtn" class="btn primary">解析需求</button>
+            <button id="ruleBtn" class="btn ghost">仅规则解析</button>
+            <button id="recBtn" class="btn primary" disabled>生成配餐方案</button>
+            <span id="parseMeta" class="muted"></span>
+          </div>
+          <div id="parseNotice" class="notice hidden"></div>
+        </div>
+
+        <div id="constraintForm" class="cf hidden">
+          <div class="cf-grid">
+            <label>预算上限（元）<input id="fBudget" type="number" min="0" step="0.5" placeholder="留空=不限" /></label>
+            <label>热量上限（kcal）<input id="fKcalMax" type="number" min="0" step="10" placeholder="留空=不限" /></label>
+            <label>热量下限（kcal）<input id="fKcalMin" type="number" min="0" step="10" placeholder="留空=不限" /></label>
+            <label>蛋白质下限（g）<input id="fProteinMin" type="number" min="0" step="1" placeholder="留空=不限" /></label>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">必须包含</span>
+            <label class="chk"><input type="checkbox" id="fReqMain" /> 主食</label>
+            <label class="chk"><input type="checkbox" id="fReqSide" /> 小食</label>
+            <label class="chk"><input type="checkbox" id="fReqDrink" /> 饮料</label>
+            <label class="chk"><input type="checkbox" id="fReqDessert" /> 甜品</label>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">优化倾向</span>
+            <label class="chk"><input type="checkbox" id="fObjProtein" /> 尽量高蛋白</label>
+            <label class="chk"><input type="checkbox" id="fObjCalories" /> 尽量低热量</label>
+            <label class="chk"><input type="checkbox" id="fObjPrice" /> 尽量便宜</label>
+            <label class="chk"><input type="checkbox" id="fObjTaste" /> 口味优先</label>
+          </div>
+          <div class="cf-grid">
+            <label>偏好（逗号分隔）<input id="fPref" type="text" placeholder="如：麦香鱼, 无糖可乐" /></label>
+            <label>排除（逗号分隔）<input id="fExcl" type="text" placeholder="如：麦辣" /></label>
+          </div>
+          <div id="cfExtra" class="cf-extra"></div>
+          <div class="cf-foot">
+            <span class="muted">以上为可编辑的结构化约束，修改后直接生成方案，不会再次调用模型。</span>
+          </div>
+        </div>
+
+        <div id="plansOut" class="plans"></div>
+        <div id="compareOut" class="compare hidden"></div>
+      </section>
+      <section class="card split">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>套餐营养与价格验证</h2>
+            <select id="mealSelect" class="select"></select>
+          </div>
+          <p class="hint" id="mealHint"></p>
+          <div id="roundsArea" class="rounds"></div>
+
+          <div class="result">
+            <div class="kcal-box">
+              <span class="kcal-label" id="kcalLabel">各组件官方值之和</span>
+              <div class="kcal-value"><span id="kcalValue">—</span><em>kcal</em></div>
+              <div class="kcal-meta" id="kcalMeta"></div>
+            </div>
+            <div class="macro" id="macroGrid"></div>
+          </div>
+
+          <div class="actions">
+            <button id="priceBtn" class="btn primary">用 MCP 实算这份套餐价格</button>
+            <button id="refreshBtn" class="btn ghost">刷新数据</button>
+          </div>
+          <div id="priceOut" class="price-out empty">尚未核价</div>
+        </div>
+
+        <aside class="panel aside">
+          <h2>营养数据覆盖率</h2>
+          <div id="coverageBody" class="cov"></div>
+        </aside>
+      </section>
+
+      <section class="card">
+        <div class="panel-head">
+          <h2>在售商品与营养匹配状态</h2>
+          <div class="filters">
+            <input id="search" class="input" type="search" placeholder="搜索商品名 / code" />
+            <select id="statusFilter" class="select">
+              <option value="">全部营养状态</option>
+              <option value="official">官方值（可直接计算）</option>
+              <option value="derived_sum">组合求和（可直接计算）</option>
+              <option value="partial">部分缺失</option>
+              <option value="unknown">无数据</option>
+            </select>
+            <select id="catFilter" class="select"></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="grid">
+            <colgroup>
+              <col class="c-code" /><col class="c-name" /><col class="c-cat" />
+              <col class="c-type" /><col class="c-num" /><col class="c-num" /><col class="c-status" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>code</th>
+                <th>商品</th>
+                <th>分类</th>
+                <th>类型</th>
+                <th class="num">热量 kcal</th>
+                <th class="num">蛋白 g</th>
+                <th>营养状态</th>
+              </tr>
+            </thead>
+            <tbody id="productRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="panel-head">
+          <h2>数据来源与真实性说明</h2>
+        </div>
+        <ul class="notes">
+          <li>所有商品、价格、营养数值均来自麦当劳 MCP 实时接口；不存在手写或模拟数据。</li>
+          <li>套餐热量的口径是<strong>各组件官方标准值之和</strong>，官方并未提供套餐级营养标示。</li>
+          <li>营养单位与基准份量在 MCP 返回值中未声明，按字段名与量级推断为 kcal / g / mg（每份）。</li>
+          <li>特制（去酱、去冰、加减配料）的营养变化无官方数据支撑，界面<strong>不给伪造的精确值</strong>。</li>
+          <li>官方营养表未覆盖的商品一律标记 <code>unknown</code>，绝不按 0 处理。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span id="footSrc">加载中…</span>
+    </footer>
+
+    <script type="module" src="/app.js"></script>
+    <script type="module" src="/stage2.js"></script>
+  </body>
+</html>
